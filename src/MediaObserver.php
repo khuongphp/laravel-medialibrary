@@ -10,7 +10,9 @@ class MediaObserver
 {
     public function creating(Media $media)
     {
-        $media->setHighestOrderNumber();
+        if ($media->shouldSortWhenCreating()) {
+            $media->setHighestOrderNumber();
+        }
     }
 
     public function updating(Media $media)
@@ -27,7 +29,12 @@ class MediaObserver
         }
 
         if ($media->manipulations !== json_decode($media->getOriginal('manipulations'), true)) {
+            $eventDispatcher = Media::getEventDispatcher();
+            Media::unsetEventDispatcher();
+
             app(FileManipulator::class)->createDerivedFiles($media);
+
+            Media::setEventDispatcher($eventDispatcher);
         }
     }
 

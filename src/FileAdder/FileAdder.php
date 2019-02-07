@@ -239,7 +239,9 @@ class FileAdder
 
         $media->manipulations = $this->manipulations;
 
-        $media->setCustomHeaders($this->customHeaders);
+        if (filled($this->customHeaders)) {
+            $media->setCustomHeaders($this->customHeaders);
+        }
 
         $media->fill($this->properties);
 
@@ -309,7 +311,9 @@ class FileAdder
         }
 
         if ($this->generateResponsiveImages && (new ImageGenerator())->canConvert($media)) {
-            $job = new GenerateResponsiveImages($media);
+            $generateResponsiveImagesJobClass = config('medialibrary.jobs.generate_responsive_images', GenerateResponsiveImages::class);
+
+            $job = new $generateResponsiveImagesJobClass($media);
 
             if ($customQueue = config('medialibrary.queue_name')) {
                 $job->onQueue($customQueue);
